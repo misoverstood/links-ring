@@ -5,6 +5,9 @@
 
   Add a site: append it to SITES. Every footer updates within about 10 minutes.
   Change format: set MODE to "list" (all sites inline) or "ring" (prev / random / next).
+
+  Separators render as: space, <span class="sep" aria-hidden="true">·</span>, space.
+  Sites can style .sep if they want; sites that don't see a plain " · ".
 */
 (function () {
   "use strict";
@@ -21,8 +24,6 @@
     "kholvad.org"
   ];
 
-  var SEP = " \u00B7 ";
-
   function hereIndex() {
     var host = (location.hostname || "").toLowerCase().replace(/^www\./, "");
     return SITES.indexOf(host);
@@ -37,9 +38,19 @@
     return a;
   }
 
+  function addSep(nav) {
+    var s = document.createElement("span");
+    s.className = "sep";
+    s.setAttribute("aria-hidden", "true");
+    s.textContent = "\u00B7";
+    nav.appendChild(document.createTextNode(" "));
+    nav.appendChild(s);
+    nav.appendChild(document.createTextNode(" "));
+  }
+
   function renderList(nav, here) {
     SITES.forEach(function (domain, i) {
-      if (i > 0) nav.appendChild(document.createTextNode(SEP));
+      if (i > 0) addSep(nav);
       nav.appendChild(makeLink(domain, domain, i === here));
     });
   }
@@ -51,9 +62,9 @@
     var others = SITES.filter(function (_, i) { return i !== here; });
     var rand = others[Math.floor(Math.random() * others.length)];
     nav.appendChild(makeLink(SITES[prev], "\u2190 prev", false));
-    nav.appendChild(document.createTextNode(SEP));
+    addSep(nav);
     nav.appendChild(makeLink(rand, "random", false));
-    nav.appendChild(document.createTextNode(SEP));
+    addSep(nav);
     nav.appendChild(makeLink(SITES[next], "next \u2192", false));
   }
 
