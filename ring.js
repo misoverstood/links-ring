@@ -6,6 +6,10 @@
   Add a site: append it to SITES. Every footer updates within about 10 minutes.
   Change format: set MODE to "list" (all sites inline) or "ring" (prev / random / next).
 
+  Mount point: any element with a data-links-ring attribute. It is filled at load,
+  and any that appear later (app-style sites that re-render their footer) are
+  filled as they appear. Filled elements get data-links-ring-filled.
+
   Separators render as: space, <span class="sep" aria-hidden="true">·</span>, space.
   Sites can style .sep if they want; sites that don't see a plain " · ".
 */
@@ -68,13 +72,24 @@
     nav.appendChild(makeLink(SITES[next], "next \u2192", false));
   }
 
-  function init() {
-    var here = hereIndex();
-    var navs = document.querySelectorAll("[data-links-ring]");
+  var HERE = -1;
+
+  function fillAll() {
+    var navs = document.querySelectorAll("[data-links-ring]:not([data-links-ring-filled])");
     for (var i = 0; i < navs.length; i++) {
-      navs[i].textContent = "";
-      if (MODE === "ring") renderRing(navs[i], here);
-      else renderList(navs[i], here);
+      var nav = navs[i];
+      nav.setAttribute("data-links-ring-filled", "");
+      nav.textContent = "";
+      if (MODE === "ring") renderRing(nav, HERE);
+      else renderList(nav, HERE);
+    }
+  }
+
+  function init() {
+    HERE = hereIndex();
+    fillAll();
+    if (window.MutationObserver) {
+      new MutationObserver(fillAll).observe(document.documentElement, { childList: true, subtree: true });
     }
   }
 
